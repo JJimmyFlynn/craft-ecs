@@ -1,6 +1,6 @@
-/*
-    BASE VPC
-*/
+/****************************************
+* BASE VPC
+*****************************************/
 resource "aws_vpc" "craft_vpc" {
     cidr_block = "10.0.0.0/16"
 
@@ -9,9 +9,9 @@ resource "aws_vpc" "craft_vpc" {
     }
 }
 
-/*
-    SUBNETS
-*/
+/****************************************
+* SUBNETS
+*****************************************/
 resource "aws_subnet" "craft_public_1" {
     vpc_id = aws_vpc.craft_vpc.id
     availability_zone = "us-east-1a"
@@ -52,17 +52,17 @@ resource "aws_subnet" "craft_private_2" {
     }
 }
 
-/*
-    INTERNET GATEWAY
-*/
+/****************************************
+* INTERNET GATEWAY
+*****************************************/
 resource "aws_internet_gateway" "internet_gateway" {
     vpc_id = aws_vpc.craft_vpc.id
 }
 
-/*
-    ROUTE TABLE
-*/
-resource "aws_route_table" "web_dmz" {
+/****************************************
+* ROUTE TABLE
+*****************************************/
+resource "aws_route_table" "web_access" {
     vpc_id = aws_vpc.craft_vpc.id
 
     route {
@@ -71,17 +71,16 @@ resource "aws_route_table" "web_dmz" {
     }
 
     tags = {
-        "Name": "Web DMZ"
+        "Name": "Web Access"
     }
 }
 
-
-resource "aws_route_table_association" "public_1_web_dmz" {
-    route_table_id = aws_route_table.web_dmz.id
+resource "aws_route_table_association" "public_1_web_access" {
+    route_table_id = aws_route_table.web_access.id
     subnet_id = aws_subnet.craft_public_1.id
 }
 
-resource "aws_route_table_association" "public_2_web_dmz" {
-    route_table_id = aws_route_table.web_dmz.id
+resource "aws_route_table_association" "public_2_web_access" {
+    route_table_id = aws_route_table.web_access.id
     subnet_id = aws_subnet.craft_public_2.id
 }
