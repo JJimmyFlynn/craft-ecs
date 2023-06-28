@@ -4,7 +4,7 @@ resource "random_string" "craft_security_key" {
 }
 
 data "aws_secretsmanager_secret" "database_password" {
-  arn = aws_rds_cluster.database_cluster.master_user_secret.0.secret_arn
+  arn = "arn:aws:secretsmanager:us-east-1:504200660083:secret:craft-ecs/database-credentials-etRROU"
 }
 
 data "aws_secretsmanager_secret_version" "database_password_json" {

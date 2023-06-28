@@ -143,7 +143,9 @@ resource "aws_lb_target_group" "craft_europa_ecs" {
   vpc_id      = aws_vpc.craft_vpc.id
 
   health_check {
-    path = "/actions/app/health-check"
+    path     = "/actions/app/health-check"
+    interval = 35
+    timeout  = 30
   }
 
   tags = {

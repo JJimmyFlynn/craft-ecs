@@ -28,7 +28,7 @@ resource "aws_ecs_task_definition" "craft_web" {
   cpu                      = 1024
   memory                   = 2048
   network_mode             = "awsvpc"
-  execution_role_arn       = aws_iam_role.craft_web_task_role.arn
+  execution_role_arn       = aws_iam_role.craft_web_task_execution_role.arn
   task_role_arn            = aws_iam_role.craft_web_task_role.arn
   container_definitions = jsonencode([
     {
@@ -76,6 +76,22 @@ resource "aws_ecs_task_definition" "craft_web" {
         {
           name : "DEFAULT_SITE_URL"
           value : "http://europa.johnjflynn.net"
+        },
+        {
+          name : "S3_BASE_URL",
+          value : aws_s3_bucket.app_storage.bucket_domain_name
+        },
+        {
+          name : "S3_BUCKET",
+          value : aws_s3_bucket.app_storage.bucket
+        },
+        {
+          name : "FS_HANDLE",
+          value : "images"
+        },
+        {
+          name : "AWS_REGION",
+          value : "us-east-1"
         }
       ]
       logConfiguration : {
@@ -91,6 +107,36 @@ resource "aws_ecs_task_definition" "craft_web" {
 }
 
 resource "aws_iam_role" "craft_web_task_role" {
+  name = "CraftWebTaskRole"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  inline_policy {
+    name = "s3_storage_access"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action   = "s3:*"
+          Effect   = "Allow"
+          Resource = aws_s3_bucket.app_storage.arn
+        }
+      ]
+    })
+  }
+}
+
+resource "aws_iam_role" "craft_web_task_execution_role" {
   name                = "ECSTaskExecutionRole"
   managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
   assume_role_policy = jsonencode({
