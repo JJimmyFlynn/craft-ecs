@@ -13,3 +13,4 @@ USER www-data
 COPY --chown=www-data:www-data app .
 COPY --chown=www-data:www-data --from=composer /app/vendor/ ./vendor/
 COPY --from=composer /usr/bin/composer /usr/bin/composer
+

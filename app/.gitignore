@@ -20,6 +20,7 @@ web/mix-manifest.json
 web/favicon.ico
 web/manifest.json
 web/browserconfig.xml
+web/volumes
 
 # BUILD FILES
 node_modules
