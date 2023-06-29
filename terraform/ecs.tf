@@ -79,11 +79,11 @@ resource "aws_ecs_task_definition" "craft_web" {
         },
         {
           name : "S3_BASE_URL",
-          value : aws_s3_bucket.app_storage.bucket_domain_name
+          value : "https://${data.aws_s3_bucket.app_storage.bucket_domain_name}"
         },
         {
           name : "S3_BUCKET",
-          value : aws_s3_bucket.app_storage.bucket
+          value : data.aws_s3_bucket.app_storage.bucket
         },
         {
           name : "FS_HANDLE",
@@ -129,7 +129,26 @@ resource "aws_iam_role" "craft_web_task_role" {
         {
           Action   = "s3:*"
           Effect   = "Allow"
-          Resource = aws_s3_bucket.app_storage.arn
+          Resource = data.aws_s3_bucket.app_storage.arn
+        }
+      ]
+    })
+  }
+
+  inline_policy {
+    name = "allow_ecs_ssm_execute"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "ssmmessages:CreateControlChannel",
+            "ssmmessages:CreateDataChannel",
+            "ssmmessages:OpenControlChannel",
+            "ssmmessages:OpenDataChannel"
+          ],
+          Effect   = "Allow"
+          Resource = "*"
         }
       ]
     })

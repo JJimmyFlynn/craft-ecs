@@ -11,7 +11,6 @@ resource "aws_rds_cluster" "database_cluster" {
   db_subnet_group_name   = aws_db_subnet_group.database_subnet_group.name
   vpc_security_group_ids = [aws_security_group.database_allow_ecs.id]
   snapshot_identifier    = "craft-ecs-seed"
-  deletion_protection    = true
 }
 
 resource "aws_rds_cluster_instance" "database_instance" {
