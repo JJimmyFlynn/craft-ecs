@@ -33,7 +33,7 @@ resource "aws_ecs_task_definition" "craft_web" {
   container_definitions = jsonencode([
     {
       name  = "craft-europa"
-      image = data.aws_ecr_repository.craft_europa.repository_url
+      image = "${data.aws_ecr_repository.craft_europa.repository_url}:latest"
       portMappings = [
         {
           containerPort : 8080
