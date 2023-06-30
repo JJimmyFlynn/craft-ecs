@@ -43,7 +43,7 @@ resource "aws_ecs_task_definition" "craft_web" {
       environment = [
         {
           name : "CRAFT_ENVIRONMENT"
-          value : "dev"
+          value : "production"
         },
         {
           name : "CRAFT_SECURITY_KEY"
