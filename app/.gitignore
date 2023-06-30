@@ -11,7 +11,7 @@ storage/*
 
 # WEB
 web/cpresources
-web/assets/*
+web/assets/volumes
 web/css
 web/images
 web/js
