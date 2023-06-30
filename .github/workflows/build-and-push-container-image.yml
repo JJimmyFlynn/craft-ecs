@@ -30,7 +30,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         with:
           push: true
-          tags: $REGISTRY/$REPOSITORY:$IMAGE_TAG,$REGISTRY/$REPOSITORY:latest
+          tags: "$REGISTRY/$REPOSITORY:$IMAGE_TAG","$REGISTRY/$REPOSITORY:latest"
 #      - name: Start ECS Deployment
 #        run: aws ecs update-service --cluster Craft_ECS --service craft_web --force-new-deployment
 
