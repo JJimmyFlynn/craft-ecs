@@ -29,7 +29,6 @@ jobs:
           REPOSITORY: craft-europa
           IMAGE_TAG: ${{ github.sha }}
         with:
-          context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
