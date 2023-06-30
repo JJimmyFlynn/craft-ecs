@@ -21,7 +21,7 @@ jobs:
       - name: Login to Amazon ECR
         uses: docker/login-action@v2
         with:
-          registry: docker/login-action@v2
+          registry: 504200660083.dkr.ecr.us-east-1.amazonaws.com/craft-europa
       - name: Build, tag, and push docker image to Amazon ECR
         uses: docker/build-push-action@v4
         env:
