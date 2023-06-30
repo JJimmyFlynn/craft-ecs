@@ -31,8 +31,8 @@ jobs:
         with:
           push: true
           tags: |
-            ${env.REGISTRY}/${env.REPOSITORY}:${env.IMAGE_TAG}
-            ${env.REGISTRY}/${env.REPOSITORY}:latest
+            ${{env.REGISTRY}}/${{env.REPOSITORY}}:${{env.IMAGE_TAG}}
+            ${{env.REGISTRY}}/${{env.REPOSITORY}}:latest
 #      - name: Start ECS Deployment
 #        run: aws ecs update-service --cluster Craft_ECS --service craft_web --force-new-deployment
 
