@@ -6,6 +6,8 @@ services:
     ports:
       - "${HOST_WEB_PORT}:8080"
     env_file: .env
+    volumes:
+      - .:/app
     depends_on:
       postgres:
         condition: service_healthy
@@ -21,6 +23,5 @@ services:
       test: ["CMD", "pg_isready"]
       interval: 5s
       retries: 3
-
 volumes:
   db_data:

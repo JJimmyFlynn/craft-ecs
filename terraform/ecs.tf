@@ -1,14 +1,81 @@
+locals {
+  craft_base_container_definition = {
+    image = "${data.aws_ecr_repository.craft_europa.repository_url}:latest"
+    environment = [
+      {
+        name : "CRAFT_ENVIRONMENT"
+        value : "production"
+      },
+      {
+        name : "CRAFT_SECURITY_KEY"
+        value : random_string.craft_security_key.result
+      },
+      {
+        name : "CRAFT_DB_DRIVER"
+        value : "pgsql"
+      },
+      {
+        name : "CRAFT_DB_SERVER"
+        value : aws_rds_cluster_instance.database_instance.endpoint
+      },
+      {
+        name : "CRAFT_DB_PORT"
+        value : "5432"
+      },
+      {
+        name : "CRAFT_DB_USER"
+        value : "craft"
+      },
+      {
+        name : "CRAFT_DB_DATABASE"
+        value : "craft"
+      },
+      {
+        name : "CRAFT_DB_PASSWORD"
+        value : jsondecode(data.aws_secretsmanager_secret_version.database_password_json.secret_string)["password"]
+      },
+      {
+        name : "DEFAULT_SITE_URL"
+        value : "http://europa.johnjflynn.net"
+      },
+      {
+        name : "S3_BASE_URL",
+        value : "https://${data.aws_s3_bucket.app_storage.bucket_domain_name}"
+      },
+      {
+        name : "S3_BUCKET",
+        value : data.aws_s3_bucket.app_storage.bucket
+      },
+      {
+        name : "FS_HANDLE",
+        value : "images"
+      },
+      {
+        name : "AWS_REGION",
+        value : "us-east-1"
+      }
+    ]
+    logConfiguration : {
+      logDriver = "awslogs"
+      options : {
+        awslogs-region        = "us-east-1"
+        awslogs-group         = "craft_ecs"
+        awslogs-stream-prefix = "streaming"
+      }
+    }
+  }
+}
+
 resource "aws_ecs_cluster" "craft_ecs" {
   name = "Craft_ECS"
 }
 
 resource "aws_ecs_service" "craft_web" {
-  name                   = "craft_web"
-  cluster                = aws_ecs_cluster.craft_ecs.id
-  task_definition        = aws_ecs_task_definition.craft_web.arn
-  desired_count          = 1
-  launch_type            = "FARGATE"
-  enable_execute_command = true
+  name            = "craft_web"
+  cluster         = aws_ecs_cluster.craft_ecs.id
+  task_definition = aws_ecs_task_definition.craft_web.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
 
   network_configuration {
     subnets         = [aws_subnet.craft_private_1.id, aws_subnet.craft_private_2.id]
@@ -30,80 +97,29 @@ resource "aws_ecs_task_definition" "craft_web" {
   network_mode             = "awsvpc"
   execution_role_arn       = aws_iam_role.craft_web_task_execution_role.arn
   task_role_arn            = aws_iam_role.craft_web_task_role.arn
-  container_definitions = jsonencode([
-    {
-      name  = "craft-europa"
-      image = "${data.aws_ecr_repository.craft_europa.repository_url}:latest"
-      portMappings = [
-        {
-          containerPort : 8080
-          hostPort : 8080
-        }
-      ]
-      environment = [
-        {
-          name : "CRAFT_ENVIRONMENT"
-          value : "production"
-        },
-        {
-          name : "CRAFT_SECURITY_KEY"
-          value : random_string.craft_security_key.result
-        },
-        {
-          name : "CRAFT_DB_DRIVER"
-          value : "pgsql"
-        },
-        {
-          name : "CRAFT_DB_SERVER"
-          value : aws_rds_cluster_instance.database_instance.endpoint
-        },
-        {
-          name : "CRAFT_DB_PORT"
-          value : "5432"
-        },
-        {
-          name : "CRAFT_DB_USER"
-          value : "craft"
-        },
-        {
-          name : "CRAFT_DB_DATABASE"
-          value : "craft"
-        },
-        {
-          name : "CRAFT_DB_PASSWORD"
-          value : jsondecode(data.aws_secretsmanager_secret_version.database_password_json.secret_string)["password"]
-        },
-        {
-          name : "DEFAULT_SITE_URL"
-          value : "http://europa.johnjflynn.net"
-        },
-        {
-          name : "S3_BASE_URL",
-          value : "https://${data.aws_s3_bucket.app_storage.bucket_domain_name}"
-        },
-        {
-          name : "S3_BUCKET",
-          value : data.aws_s3_bucket.app_storage.bucket
-        },
-        {
-          name : "FS_HANDLE",
-          value : "images"
-        },
-        {
-          name : "AWS_REGION",
-          value : "us-east-1"
-        }
-      ]
-      logConfiguration : {
-        logDriver = "awslogs"
-        options : {
-          awslogs-region        = "us-east-1"
-          awslogs-group         = "craft_ecs"
-          awslogs-stream-prefix = "streaming"
-        }
+  container_definitions = jsonencode([merge(local.craft_base_container_definition, {
+    name = "craft-europa"
+    portMappings = [
+      {
+        containerPort : 8080
+        hostPort : 8080
       }
-    }
-  ])
+    ]
+  })])
+}
+
+resource "aws_ecs_task_definition" "craft_init" {
+  family                   = "craft_init"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = 1024
+  memory                   = 2048
+  network_mode             = "awsvpc"
+  execution_role_arn       = aws_iam_role.craft_web_task_execution_role.arn
+  task_role_arn            = aws_iam_role.craft_web_task_role.arn
+  container_definitions = jsonencode([merge(local.craft_base_container_definition, {
+    name       = "craft-init"
+    entrypoint = [".deploy/init.sh"]
+  })])
 }
 
 resource "aws_iam_role" "craft_web_task_role" {

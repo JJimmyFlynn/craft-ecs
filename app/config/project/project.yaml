@@ -1,4 +1,4 @@
-dateModified: 1684282609
+dateModified: 1688759651
 email:
   fromEmail: support@craftcms.com
   fromName: 'Europa Museum'
@@ -18,7 +18,7 @@ fs:
     hasUrls: true
     name: Images
     settings:
-      addSubfolderToRootUrl: true
+      addSubfolderToRootUrl: false
       autoFocalPoint: false
       bucket: $S3_BUCKET
       bucketSelectionMode: manual
@@ -26,13 +26,13 @@ fs:
       cfPrefix: ''
       expires: ''
       keyId: ''
-      makeUploadsPublic: true
+      makeUploadsPublic: false
       region: $AWS_REGION
       secret: ''
       storageClass: ''
-      subfolder: assets/volumes/images
+      subfolder: ''
     type: craft\awss3\Fs
-    url: $S3_BASE_URL
+    url: $CLOUDFRONT_URL
   imagesLocal:
     hasUrls: true
     name: 'Images (local)'
