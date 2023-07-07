@@ -35,6 +35,15 @@ jobs:
           tags: |
             ${{env.REGISTRY}}/${{env.REPOSITORY}}:${{env.IMAGE_TAG}}
             ${{env.REGISTRY}}/${{env.REPOSITORY}}:latest
+      - name: Set ECS Security Group ID Variable
+        run: echo "ecs_sg_id=$(aws ec2 describe-security-groups --filters Name=group-name,Values=ecs-service-sg --query 'SecurityGroups[*].{ID:GroupId}' --output json)" >> $GITHUB_ENV"
+      - name: Set ECS Subnet IDs Variable
+        run: echo "ecs_subnet_ids=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=Craft Private 1,Craft Private 2" --query 'Subnets[*].SubnetId' --output json)" >> $GITHUB_ENV
+      - name: Launch Init Task
+        run: aws ecs run-task \
+          -- cluster Craft_ECS \
+          -- task-definition craft_init \
+          -- awsvpcConfiguration={subnets=${{ env.ecs_subnet_ids }},securityGroups=[${{ env.ecs_sg_id }}]}
       - name: Start ECS Deployment
         run: aws ecs update-service --cluster Craft_ECS --service craft_web --force-new-deployment
 
