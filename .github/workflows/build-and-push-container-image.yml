@@ -40,7 +40,8 @@ jobs:
       - name: Set ECS Subnet IDs Variable
         run: echo "ecs_subnet_ids=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=Craft Private 1" --query 'Subnets[*].SubnetId' --output text)" >> "$GITHUB_ENV"
       - name: Launch Init Task
-        run: aws ecs run-task \
+        run: | 
+          aws ecs run-task \
           --cluster=Craft_ECS \
           --task-definition=craft_init \
           --awsvpcConfiguration={subnets=[${{ env.ecs_subnet_ids }}],securityGroups=[${{ env.ecs_sg_id }}]}
