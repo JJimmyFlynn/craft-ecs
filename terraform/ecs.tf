@@ -127,9 +127,12 @@ resource "aws_iam_role" "craft_web_task_role" {
       Version = "2012-10-17"
       Statement = [
         {
-          Action   = "s3:*"
-          Effect   = "Allow"
-          Resource = data.aws_s3_bucket.app_storage.arn
+          Action = "s3:*"
+          Effect = "Allow"
+          Resource = [
+            data.aws_s3_bucket.app_storage.arn,
+            "${data.aws_s3_bucket.app_storage.arn}/*"
+          ]
         }
       ]
     })
