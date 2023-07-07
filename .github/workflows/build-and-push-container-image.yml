@@ -42,9 +42,10 @@ jobs:
       - name: Launch Init Task
         run: | 
           aws ecs run-task \
-          --cluster=Craft_ECS \
-          --task-definition=craft_init \
-          --awsvpcConfiguration={subnets=[${{ env.ecs_subnet_ids }}],securityGroups=[${{ env.ecs_sg_id }}]}
+          --cluster Craft_ECS \
+          --task-definition craft_init \
+          --launch-type FARGATE \
+          --network-configuration "awsvpcConfiguration={subnets=[${{ env.ecs_subnet_ids }}],securityGroups=[${{ env.ecs_sg_id }}]}"
       - name: Start ECS Deployment
         run: aws ecs update-service --cluster Craft_ECS --service craft_web --force-new-deployment
 
