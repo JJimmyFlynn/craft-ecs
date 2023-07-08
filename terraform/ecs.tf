@@ -1,6 +1,12 @@
 locals {
   craft_base_container_definition = {
     image = "${data.aws_ecr_repository.craft_europa.repository_url}:latest"
+    mountPoints = [
+      {
+        "containerPath" : "/app/storage"
+        "sourceVolume" : "shared-storage"
+      }
+    ]
     environment = [
       {
         name : "CRAFT_ENVIRONMENT"
@@ -78,7 +84,7 @@ resource "aws_ecs_service" "craft_web" {
   name            = "craft_web"
   cluster         = aws_ecs_cluster.craft_ecs.id
   task_definition = aws_ecs_task_definition.craft_web.arn
-  desired_count   = 2
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -101,6 +107,13 @@ resource "aws_ecs_task_definition" "craft_web" {
   network_mode             = "awsvpc"
   execution_role_arn       = aws_iam_role.craft_web_task_execution_role.arn
   task_role_arn            = aws_iam_role.craft_web_task_role.arn
+  volume {
+    name = "shared-storage"
+    efs_volume_configuration {
+      file_system_id = aws_efs_file_system.craft_efs.id
+      root_directory = "/craft-europa-storage"
+    }
+  }
   container_definitions = jsonencode([merge(local.craft_base_container_definition, {
     name = "craft-europa"
     portMappings = [
@@ -120,6 +133,13 @@ resource "aws_ecs_task_definition" "craft_init" {
   network_mode             = "awsvpc"
   execution_role_arn       = aws_iam_role.craft_web_task_execution_role.arn
   task_role_arn            = aws_iam_role.craft_web_task_role.arn
+  volume {
+    name = "shared-storage"
+    efs_volume_configuration {
+      file_system_id = aws_efs_file_system.craft_efs.id
+      root_directory = "/craft-europa-storage"
+    }
+  }
   container_definitions = jsonencode([merge(local.craft_base_container_definition, {
     name       = "craft-init"
     entrypoint = [".deploy/init.sh"]

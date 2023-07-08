@@ -70,3 +70,19 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ecs_sg" {
   from_port                    = 5432
   to_port                      = 5432
 }
+
+/****************************************
+* EFS SECURITY GROUP
+*****************************************/
+resource "aws_security_group" "efs_allow_ecs" {
+  name   = "efs-allow-ecs"
+  vpc_id = aws_vpc.craft_vpc.id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_ecs_nfs_sg" {
+  security_group_id            = aws_security_group.efs_allow_ecs.id
+  referenced_security_group_id = aws_security_group.ecs_service_sg.id
+  ip_protocol                  = "tcp"
+  from_port                    = 2049
+  to_port                      = 2049
+}

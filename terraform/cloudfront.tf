@@ -10,8 +10,7 @@ resource "aws_cloudfront_origin_access_control" "craft_europa" {
 }
 
 resource "aws_cloudfront_distribution" "craft_europa" {
-  retain_on_delete = true
-  enabled          = true
+  enabled = true
   origin {
     domain_name              = data.aws_s3_bucket.app_storage.bucket_domain_name
     origin_id                = local.s3_origin_id
