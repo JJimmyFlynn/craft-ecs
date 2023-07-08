@@ -51,6 +51,10 @@ locals {
         value : "images"
       },
       {
+        name : "CLOUDFRONT_URL",
+        value : "https://${aws_cloudfront_distribution.craft_europa.domain_name}"
+      },
+      {
         name : "AWS_REGION",
         value : "us-east-1"
       }
