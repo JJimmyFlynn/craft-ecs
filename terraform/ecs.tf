@@ -78,7 +78,7 @@ resource "aws_ecs_service" "craft_web" {
   name            = "craft_web"
   cluster         = aws_ecs_cluster.craft_ecs.id
   task_definition = aws_ecs_task_definition.craft_web.arn
-  desired_count   = 1
+  desired_count   = 2
   launch_type     = "FARGATE"
 
   network_configuration {
