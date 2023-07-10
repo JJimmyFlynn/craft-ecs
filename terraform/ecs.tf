@@ -76,6 +76,20 @@ locals {
   }
 }
 
+locals {
+  /* Additions made here should be added to task definition volume configs */
+  volume_config = {
+    name = "shared-storage"
+    efs_volume_configuration = {
+      file_system_id     = aws_efs_file_system.craft_efs.id
+      transit_encryption = "ENABLED"
+      authorization_config = {
+        access_point_id = aws_efs_access_point.craft_europa_ap.id
+      }
+    }
+  }
+}
+
 resource "aws_ecs_cluster" "craft_ecs" {
   name = "Craft_ECS"
 }
@@ -108,12 +122,12 @@ resource "aws_ecs_task_definition" "craft_web" {
   execution_role_arn       = aws_iam_role.craft_web_task_execution_role.arn
   task_role_arn            = aws_iam_role.craft_web_task_role.arn
   volume {
-    name = "shared-storage"
+    name = local.volume_config.name
     efs_volume_configuration {
-      file_system_id     = aws_efs_file_system.craft_efs.id
-      transit_encryption = "ENABLED"
+      file_system_id     = local.volume_config.efs_volume_configuration.file_system_id
+      transit_encryption = local.volume_config.efs_volume_configuration.transit_encryption
       authorization_config {
-        access_point_id = aws_efs_access_point.craft_europa_ap.id
+        access_point_id = local.volume_config.efs_volume_configuration.authorization_config.access_point_id
       }
     }
   }
@@ -137,12 +151,12 @@ resource "aws_ecs_task_definition" "craft_init" {
   execution_role_arn       = aws_iam_role.craft_web_task_execution_role.arn
   task_role_arn            = aws_iam_role.craft_web_task_role.arn
   volume {
-    name = "shared-storage"
+    name = local.volume_config.name
     efs_volume_configuration {
-      file_system_id     = aws_efs_file_system.craft_efs.id
-      transit_encryption = "ENABLED"
+      file_system_id     = local.volume_config.efs_volume_configuration.file_system_id
+      transit_encryption = local.volume_config.efs_volume_configuration.transit_encryption
       authorization_config {
-        access_point_id = aws_efs_access_point.craft_europa_ap.id
+        access_point_id = local.volume_config.efs_volume_configuration.authorization_config.access_point_id
       }
     }
   }
