@@ -110,8 +110,11 @@ resource "aws_ecs_task_definition" "craft_web" {
   volume {
     name = "shared-storage"
     efs_volume_configuration {
-      file_system_id = aws_efs_file_system.craft_efs.id
-      root_directory = "/craft-europa-storage"
+      file_system_id     = aws_efs_file_system.craft_efs.id
+      transit_encryption = "ENABLED"
+      authorization_config {
+        access_point_id = aws_efs_access_point.craft_europa_ap.id
+      }
     }
   }
   container_definitions = jsonencode([merge(local.craft_base_container_definition, {
@@ -136,8 +139,11 @@ resource "aws_ecs_task_definition" "craft_init" {
   volume {
     name = "shared-storage"
     efs_volume_configuration {
-      file_system_id = aws_efs_file_system.craft_efs.id
-      root_directory = "/craft-europa-storage"
+      file_system_id     = aws_efs_file_system.craft_efs.id
+      transit_encryption = "ENABLED"
+      authorization_config {
+        access_point_id = aws_efs_access_point.craft_europa_ap.id
+      }
     }
   }
   container_definitions = jsonencode([merge(local.craft_base_container_definition, {
