@@ -1,3 +1,6 @@
+/****************************************
+* Aurora Postgres Cluster
+*****************************************/
 resource "aws_rds_cluster" "database_cluster" {
   cluster_identifier     = "craft-europa-postgres"
   engine                 = "aurora-postgresql"

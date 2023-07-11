@@ -1,10 +1,13 @@
 /****************************************
-* ECR REPOSITORY
+* ECR Repository
 *****************************************/
 data "aws_ecr_repository" "craft_europa" {
   name = "craft-europa"
 }
 
+/****************************************
+* VPC Interface Endpoints
+*****************************************/
 resource "aws_vpc_endpoint" "ecr_dkr_endpoint" {
   service_name        = "com.amazonaws.us-east-1.ecr.dkr"
   vpc_id              = aws_vpc.craft_vpc.id

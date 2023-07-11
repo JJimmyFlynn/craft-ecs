@@ -1,3 +1,7 @@
+/****************************************
+* Base Container Definition
+* Shared by web and init tasks
+*****************************************/
 locals {
   craft_base_container_definition = {
     image = "${data.aws_ecr_repository.craft_europa.repository_url}:latest"
@@ -76,6 +80,10 @@ locals {
   }
 }
 
+/****************************************
+* EFS Volume Config
+* Shared by web and init tasks
+*****************************************/
 locals {
   /* Additions made here should be added to task definition volume configs */
   volume_config = {
@@ -90,10 +98,16 @@ locals {
   }
 }
 
+/****************************************
+* ECS Cluster
+*****************************************/
 resource "aws_ecs_cluster" "craft_ecs" {
   name = "Craft_ECS"
 }
 
+/****************************************
+* Web Service
+*****************************************/
 resource "aws_ecs_service" "craft_web" {
   name            = "craft_web"
   cluster         = aws_ecs_cluster.craft_ecs.id
@@ -166,6 +180,9 @@ resource "aws_ecs_task_definition" "craft_init" {
   })])
 }
 
+/****************************************
+* Web Task Role
+*****************************************/
 resource "aws_iam_role" "craft_web_task_role" {
   name = "CraftWebTaskRole"
   assume_role_policy = jsonencode({
@@ -218,6 +235,10 @@ resource "aws_iam_role" "craft_web_task_role" {
   }
 }
 
+/****************************************
+* Task Execution Role
+* AWS Manged Policy
+*****************************************/
 resource "aws_iam_role" "craft_web_task_execution_role" {
   name                = "ECSTaskExecutionRole"
   managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
@@ -236,7 +257,7 @@ resource "aws_iam_role" "craft_web_task_execution_role" {
 }
 
 /****************************************
-* ECS AGENT VPC ENDPOINT
+* ECS Agent VPC Interface Endpoint
 *****************************************/
 resource "aws_vpc_endpoint" "ecs_agent_endpoint" {
   service_name        = "com.amazonaws.us-east-1.ecs-agent"
@@ -248,7 +269,7 @@ resource "aws_vpc_endpoint" "ecs_agent_endpoint" {
 }
 
 /****************************************
-* ECS TELEMETRY VPC ENDPOINT
+* ECS Telemetry VPC Interface Endpoint
 *****************************************/
 resource "aws_vpc_endpoint" "ecs_telemetry_endpoint" {
   service_name        = "com.amazonaws.us-east-1.ecs-telemetry"
@@ -259,6 +280,9 @@ resource "aws_vpc_endpoint" "ecs_telemetry_endpoint" {
   private_dns_enabled = true
 }
 
+/****************************************
+* Cloudwatch VPC Interface Endpoint
+*****************************************/
 resource "aws_vpc_endpoint" "ecs_cloudwatch_endpoint" {
   service_name        = "com.amazonaws.us-east-1.logs"
   vpc_id              = aws_vpc.craft_vpc.id

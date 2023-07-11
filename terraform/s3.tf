@@ -1,9 +1,12 @@
+/****************************************
+* S3 Bucket - Reference to existing bucket
+*****************************************/
 data "aws_s3_bucket" "app_storage" {
   bucket = "craft-europa-app-storage-jjf"
 }
 
 /****************************************
-* BUCKET POLICY
+* Bucket Policy
 *****************************************/
 resource "aws_s3_bucket_policy" "app_storage" {
   bucket = "craft-europa-app-storage-jjf"

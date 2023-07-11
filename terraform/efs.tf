@@ -1,3 +1,6 @@
+/****************************************
+* EFS for Shared Task Storage
+*****************************************/
 resource "aws_efs_file_system" "craft_efs" {
   tags = {
     Name = "Craft Europa EFS"
@@ -14,14 +17,14 @@ resource "aws_efs_mount_target" "craft_private" {
 resource "aws_efs_access_point" "craft_europa_ap" {
   file_system_id = aws_efs_file_system.craft_efs.id
   posix_user {
-    gid = 82
-    uid = 82
+    gid = 82 // www-data
+    uid = 82 // www-data
   }
   root_directory {
     path = "/craft-europa-shared-storage"
     creation_info {
-      owner_gid   = 82
-      owner_uid   = 82
+      owner_gid   = 82 // www-data
+      owner_uid   = 82 // www-data
       permissions = "744"
     }
   }

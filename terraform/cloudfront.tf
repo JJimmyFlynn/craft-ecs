@@ -1,3 +1,6 @@
+/****************************************
+* Cloudfront for S3 Assets
+*****************************************/
 locals {
   s3_origin_id = "craft-europa-app-storage-jjf"
 }
@@ -25,7 +28,7 @@ resource "aws_cloudfront_distribution" "craft_europa" {
     viewer_protocol_policy = "allow-all"
   }
 
-  price_class = "PriceClass_100"
+  price_class = "PriceClass_100" // NA & EU
 
   viewer_certificate {
     cloudfront_default_certificate = true

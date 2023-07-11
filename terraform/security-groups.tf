@@ -1,5 +1,5 @@
 /****************************************
-* LOAD BALANCER SECURITY GROUP
+* Load Balancer Security Group
 *****************************************/
 resource "aws_security_group" "load_balancer_sg" {
   name        = "load-balancer-sg"
@@ -35,7 +35,7 @@ resource "aws_vpc_security_group_egress_rule" "lb_allow_ecs" {
 }
 
 /****************************************
-* ECS TASK SECURITY GROUP
+* ECS Task Security Group
 *****************************************/
 resource "aws_security_group" "ecs_service_sg" {
   name   = "ecs-service-sg"
@@ -61,7 +61,7 @@ resource "aws_vpc_security_group_egress_rule" "ecs_allow_all_out" {
 }
 
 /****************************************
-* ALLOW ECS SECURITY GROUP
+* Allow ECS Security Group
 *****************************************/
 resource "aws_security_group" "allow_ecs" {
   name        = "allow_ecs"
@@ -78,7 +78,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ecs_inbound" {
 }
 
 /****************************************
-* DATABASE SECURITY GROUP
+* Database Security Group
 *****************************************/
 resource "aws_security_group" "database_allow_ecs" {
   name   = "database-allow-ecs"
@@ -95,7 +95,7 @@ resource "aws_vpc_security_group_ingress_rule" "db_allow_ecs_sg" {
 }
 
 /****************************************
-* EFS SECURITY GROUP
+* EFS Security Group
 *****************************************/
 resource "aws_security_group" "efs_allow_ecs" {
   name   = "efs-allow-ecs"

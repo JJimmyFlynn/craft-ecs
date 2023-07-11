@@ -1,5 +1,5 @@
 /****************************************
-* BASE VPC
+* Base VPC
 *****************************************/
 resource "aws_vpc" "craft_vpc" {
   cidr_block           = "10.0.0.0/16"
@@ -11,7 +11,7 @@ resource "aws_vpc" "craft_vpc" {
 }
 
 /****************************************
-* SUBNETS
+* Subnets
 *****************************************/
 locals {
   az_count = 2
@@ -40,14 +40,14 @@ resource "aws_subnet" "craft_private" {
 }
 
 /****************************************
-* INTERNET GATEWAY
+* Internet Gateway
 *****************************************/
 resource "aws_internet_gateway" "internet_gateway" {
   vpc_id = aws_vpc.craft_vpc.id
 }
 
 /****************************************
-* ROUTE TABLES
+* Route Tables
 *****************************************/
 
 // PUBLIC WEB ACCESS
@@ -95,13 +95,13 @@ resource "aws_route_table_association" "private_web_access" {
 }
 
 /****************************************
-* ELASTIC IPS
+* Elastic IPs
 *****************************************/
 #resource "aws_eip" "nat_eip" {
 #}
 
 /****************************************
-* NAT GATEWAY
+* NAT Gateway
 *****************************************/
 #resource "aws_nat_gateway" "nat_gateway" {
 #  subnet_id         = element(aws_subnet.craft_public.*.id, 0)
@@ -112,7 +112,7 @@ resource "aws_route_table_association" "private_web_access" {
 #}
 
 /****************************************
-* LOAD BALANCER
+* Load Balancer
 *****************************************/
 resource "aws_alb" "load_balancer" {
   name               = "craft-ecs-lb"
@@ -121,6 +121,7 @@ resource "aws_alb" "load_balancer" {
   security_groups    = [aws_security_group.load_balancer_sg.id]
 }
 
+// Target Group
 resource "aws_lb_target_group" "craft_europa_ecs" {
   name        = "craft-europa-ecs"
   port        = 8080
@@ -139,6 +140,7 @@ resource "aws_lb_target_group" "craft_europa_ecs" {
   }
 }
 
+// Listeners
 resource "aws_lb_listener" "front_end" {
   load_balancer_arn = aws_alb.load_balancer.arn
   port              = 80
