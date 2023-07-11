@@ -23,5 +23,5 @@ resource "aws_rds_cluster_instance" "database_instance" {
 }
 
 resource "aws_db_subnet_group" "database_subnet_group" {
-  subnet_ids = [aws_subnet.craft_private_1.id, aws_subnet.craft_private_2.id]
+  subnet_ids = aws_subnet.craft_private.*.id
 }

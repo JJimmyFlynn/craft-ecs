@@ -98,11 +98,11 @@ resource "aws_ecs_service" "craft_web" {
   name            = "craft_web"
   cluster         = aws_ecs_cluster.craft_ecs.id
   task_definition = aws_ecs_task_definition.craft_web.arn
-  desired_count   = 1
+  desired_count   = 2
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [aws_subnet.craft_private_1.id, aws_subnet.craft_private_2.id]
+    subnets         = aws_subnet.craft_private.*.id
     security_groups = [aws_security_group.ecs_service_sg.id]
   }
 
@@ -233,4 +233,37 @@ resource "aws_iam_role" "craft_web_task_execution_role" {
       },
     ]
   })
+}
+
+/****************************************
+* ECS AGENT VPC ENDPOINT
+*****************************************/
+resource "aws_vpc_endpoint" "ecs_agent_endpoint" {
+  service_name        = "com.amazonaws.us-east-1.ecs-agent"
+  vpc_endpoint_type   = "Interface"
+  vpc_id              = aws_vpc.craft_vpc.id
+  subnet_ids          = aws_subnet.craft_private.*.id
+  security_group_ids  = [aws_security_group.allow_ecs.id]
+  private_dns_enabled = true
+}
+
+/****************************************
+* ECS TELEMETRY VPC ENDPOINT
+*****************************************/
+resource "aws_vpc_endpoint" "ecs_telemetry_endpoint" {
+  service_name        = "com.amazonaws.us-east-1.ecs-telemetry"
+  vpc_endpoint_type   = "Interface"
+  vpc_id              = aws_vpc.craft_vpc.id
+  subnet_ids          = aws_subnet.craft_private.*.id
+  security_group_ids  = [aws_security_group.allow_ecs.id]
+  private_dns_enabled = true
+}
+
+resource "aws_vpc_endpoint" "ecs_cloudwatch_endpoint" {
+  service_name        = "com.amazonaws.us-east-1.logs"
+  vpc_id              = aws_vpc.craft_vpc.id
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.craft_private.*.id
+  security_group_ids  = [aws_security_group.allow_ecs.id]
+  private_dns_enabled = true
 }

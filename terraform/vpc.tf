@@ -13,43 +13,29 @@ resource "aws_vpc" "craft_vpc" {
 /****************************************
 * SUBNETS
 *****************************************/
-resource "aws_subnet" "craft_public_1" {
+locals {
+  az_count = 2
+}
+
+resource "aws_subnet" "craft_public" {
+  count             = local.az_count
   vpc_id            = aws_vpc.craft_vpc.id
-  availability_zone = "us-east-1a"
-  cidr_block        = "10.0.0.0/18"
+  availability_zone = element(data.aws_availability_zones.available.names, count.index)
+  cidr_block        = cidrsubnet(aws_vpc.craft_vpc.cidr_block, 2, count.index)
 
   tags = {
-    "Name" : "Craft Public 1"
+    "Name" : "Craft Public ${count.index + 1}"
   }
 }
 
-resource "aws_subnet" "craft_public_2" {
+resource "aws_subnet" "craft_private" {
+  count             = local.az_count
   vpc_id            = aws_vpc.craft_vpc.id
-  availability_zone = "us-east-1b"
-  cidr_block        = "10.0.64.0/18"
+  availability_zone = element(data.aws_availability_zones.available.names, count.index)
+  cidr_block        = cidrsubnet(aws_vpc.craft_vpc.cidr_block, 2, count.index + local.az_count) // Pickup cidr range where public subnets left off
 
   tags = {
-    "Name" : "Craft Public 2"
-  }
-}
-
-resource "aws_subnet" "craft_private_1" {
-  vpc_id            = aws_vpc.craft_vpc.id
-  availability_zone = "us-east-1a"
-  cidr_block        = "10.0.128.0/18"
-
-  tags = {
-    "Name" : "Craft Private 1"
-  }
-}
-
-resource "aws_subnet" "craft_private_2" {
-  vpc_id            = aws_vpc.craft_vpc.id
-  availability_zone = "us-east-1b"
-  cidr_block        = "10.0.192.0/18"
-
-  tags = {
-    "Name" : "Craft Private 2"
+    "Name" : "Craft Private ${count.index + 1}"
   }
 }
 
@@ -80,50 +66,50 @@ resource "aws_route_table" "web_access" {
 
 resource "aws_route_table_association" "public_1_web_access" {
   route_table_id = aws_route_table.web_access.id
-  subnet_id      = aws_subnet.craft_public_1.id
+  subnet_id      = element(aws_subnet.craft_public.*.id, 0)
 }
 
 resource "aws_route_table_association" "public_2_web_access" {
   route_table_id = aws_route_table.web_access.id
-  subnet_id      = aws_subnet.craft_public_2.id
+  subnet_id      = element(aws_subnet.craft_public.*.id, 1)
 }
 
 // OUTBOUND ONLY WEB ACCESS
 resource "aws_route_table" "outbound_web_access" {
   vpc_id = aws_vpc.craft_vpc.id
 
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+  #  route {
+  #    cidr_block     = "0.0.0.0/0"
+  #    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+  #  }
+
+  tags = {
+    Name = "ECS Outbound Web Access"
   }
 }
 
-resource "aws_route_table_association" "private_1_web_access" {
+resource "aws_route_table_association" "private_web_access" {
+  count          = local.az_count
   route_table_id = aws_route_table.outbound_web_access.id
-  subnet_id      = aws_subnet.craft_private_1.id
-}
-
-resource "aws_route_table_association" "private_2_web_access" {
-  route_table_id = aws_route_table.outbound_web_access.id
-  subnet_id      = aws_subnet.craft_private_2.id
+  subnet_id      = element(aws_subnet.craft_private.*.id, count.index)
 }
 
 /****************************************
 * ELASTIC IPS
 *****************************************/
-resource "aws_eip" "nat_eip" {
-}
+#resource "aws_eip" "nat_eip" {
+#}
 
 /****************************************
 * NAT GATEWAY
 *****************************************/
-resource "aws_nat_gateway" "nat_gateway" {
-  subnet_id         = aws_subnet.craft_public_1.id
-  connectivity_type = "public"
-  allocation_id     = aws_eip.nat_eip.id
-
-  depends_on = [aws_internet_gateway.internet_gateway]
-}
+#resource "aws_nat_gateway" "nat_gateway" {
+#  subnet_id         = element(aws_subnet.craft_public.*.id, 0)
+#  connectivity_type = "public"
+#  allocation_id     = aws_eip.nat_eip.id
+#
+#  depends_on = [aws_internet_gateway.internet_gateway]
+#}
 
 /****************************************
 * LOAD BALANCER
@@ -131,7 +117,7 @@ resource "aws_nat_gateway" "nat_gateway" {
 resource "aws_alb" "load_balancer" {
   name               = "craft-ecs-lb"
   load_balancer_type = "application"
-  subnets            = [aws_subnet.craft_public_1.id, aws_subnet.craft_public_2.id]
+  subnets            = aws_subnet.craft_public.*.id
   security_groups    = [aws_security_group.load_balancer_sg.id]
 }
 
