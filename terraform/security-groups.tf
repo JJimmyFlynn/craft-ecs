@@ -43,12 +43,12 @@ resource "aws_security_group" "ecs_service_sg" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ecs_allow_lb_in" {
-  security_group_id = aws_security_group.ecs_service_sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "tcp"
-  from_port         = 0
-  to_port           = 65535
-  description       = "Allow ALB inbound connections"
+  security_group_id            = aws_security_group.ecs_service_sg.id
+  referenced_security_group_id = aws_security_group.load_balancer_sg.id
+  ip_protocol                  = "tcp"
+  from_port                    = 0
+  to_port                      = 65535
+  description                  = "Allow ALB inbound connections"
 }
 
 resource "aws_vpc_security_group_egress_rule" "ecs_allow_all_out" {
