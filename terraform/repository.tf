@@ -25,3 +25,11 @@ resource "aws_vpc_endpoint" "ecr_api_endpoint" {
   security_group_ids  = [aws_security_group.allow_ecs.id]
   private_dns_enabled = true
 }
+
+/****************************************
+* Pull Through Cache for ECR Public Images
+*****************************************/
+resource "aws_ecr_pull_through_cache_rule" "cloudwatch_agent" {
+  ecr_repository_prefix = "ecr-public"
+  upstream_registry_url = "public.ecr.aws"
+}

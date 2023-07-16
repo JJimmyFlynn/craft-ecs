@@ -15,6 +15,11 @@ terraform {
 }
 
 provider "aws" {
-  profile = "craft-ecs-terraform"
-  region  = "us-east-1"
+  region = "us-east-1"
+  default_tags {
+    tags = {
+      Environment = "POC"
+      Project     = "Craft ECS PoC"
+    }
+  }
 }

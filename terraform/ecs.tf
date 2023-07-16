@@ -72,6 +72,7 @@ locals {
     logConfiguration : {
       logDriver = "awslogs"
       options : {
+        awslogs-create-group  = "True"
         awslogs-region        = "us-east-1"
         awslogs-group         = "craft_ecs"
         awslogs-stream-prefix = "streaming"
@@ -99,6 +100,28 @@ locals {
 }
 
 /****************************************
+* ECS Cloudwatch Agent Log Config
+*****************************************/
+locals {
+  cloudwatch_agent_config = {
+    logs : {
+      logs_collected : {
+        files : {
+          collect_list : [
+            {
+              file_path       = "/app/storage/logs/*.log"
+              log_group_name  = "craft_europa_web"
+              log_stream_name = "craft_europa_web"
+            }
+          ]
+        }
+
+      }
+    }
+  }
+}
+
+/****************************************
 * ECS Cluster
 *****************************************/
 resource "aws_ecs_cluster" "craft_ecs" {
@@ -109,22 +132,24 @@ resource "aws_ecs_cluster" "craft_ecs" {
 * Web Service
 *****************************************/
 resource "aws_ecs_service" "craft_web" {
-  name            = "craft_web"
-  cluster         = aws_ecs_cluster.craft_ecs.id
-  task_definition = aws_ecs_task_definition.craft_web.arn
-  desired_count   = 2
-  launch_type     = "FARGATE"
+  name                   = "craft_web"
+  cluster                = aws_ecs_cluster.craft_ecs.id
+  task_definition        = aws_ecs_task_definition.craft_web.arn
+  desired_count          = 2
+  launch_type            = "FARGATE"
+  enable_execute_command = true
 
   network_configuration {
-    subnets         = aws_subnet.craft_private.*.id
-    security_groups = [aws_security_group.ecs_service_sg.id]
+    subnets          = aws_subnet.craft_public.*.id
+    security_groups  = [aws_security_group.ecs_service_sg.id]
+    assign_public_ip = true
   }
 
-  load_balancer {
-    container_name   = "craft-europa"
-    container_port   = 8080
-    target_group_arn = aws_lb_target_group.craft_europa_ecs.arn
-  }
+  #  load_balancer {
+  #    container_name   = "craft-europa"
+  #    container_port   = 8080
+  #    target_group_arn = aws_lb_target_group.craft_europa_ecs.arn
+  #  }
 }
 
 resource "aws_ecs_task_definition" "craft_web" {
@@ -153,7 +178,33 @@ resource "aws_ecs_task_definition" "craft_web" {
         hostPort : 8080
       }
     ]
-  })])
+    }),
+    {
+      name  = "cloudwatch-agent"
+      image = "504200660083.dkr.ecr.us-east-1.amazonaws.com/${aws_ecr_pull_through_cache_rule.cloudwatch_agent.ecr_repository_prefix}/cloudwatch-agent/cloudwatch-agent:latest"
+      environment = [
+        {
+          name : "CW_CONFIG_CONTENT"
+          value : jsonencode(local.cloudwatch_agent_config)
+        }
+      ]
+      mountPoints = [
+        {
+          "containerPath" : "/app/storage"
+          "sourceVolume" : "shared-storage"
+        }
+      ]
+      logConfiguration : {
+        logDriver = "awslogs"
+        options : {
+          awslogs-create-group  = "True"
+          awslogs-region        = "us-east-1"
+          awslogs-group         = "craft_ecs_cloudwatch_sidecar"
+          awslogs-stream-prefix = "streaming"
+        }
+      }
+    }
+  ])
 }
 
 resource "aws_ecs_task_definition" "craft_init" {
