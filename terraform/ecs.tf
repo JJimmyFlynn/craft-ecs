@@ -132,24 +132,22 @@ resource "aws_ecs_cluster" "craft_ecs" {
 * Web Service
 *****************************************/
 resource "aws_ecs_service" "craft_web" {
-  name                   = "craft_web"
-  cluster                = aws_ecs_cluster.craft_ecs.id
-  task_definition        = aws_ecs_task_definition.craft_web.arn
-  desired_count          = 2
-  launch_type            = "FARGATE"
-  enable_execute_command = true
+  name            = "craft_web"
+  cluster         = aws_ecs_cluster.craft_ecs.id
+  task_definition = aws_ecs_task_definition.craft_web.arn
+  desired_count   = 2
+  launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = aws_subnet.craft_public.*.id
-    security_groups  = [aws_security_group.ecs_service_sg.id]
-    assign_public_ip = true
+    subnets         = aws_subnet.craft_private.*.id
+    security_groups = [aws_security_group.ecs_service_sg.id]
   }
 
-  #  load_balancer {
-  #    container_name   = "craft-europa"
-  #    container_port   = 8080
-  #    target_group_arn = aws_lb_target_group.craft_europa_ecs.arn
-  #  }
+  load_balancer {
+    container_name   = "craft-europa"
+    container_port   = 8080
+    target_group_arn = aws_lb_target_group.craft_europa_ecs.arn
+  }
 }
 
 resource "aws_ecs_task_definition" "craft_web" {
