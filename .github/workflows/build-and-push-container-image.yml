@@ -10,6 +10,10 @@ on:
 permissions:
   id-token: write
   contents: read
+env:
+  AWS_EXECUTION_ROLE: ${secrets.AWS_EXECUTION_ROLE}
+  ECR_REGISTRY_URL: ${secrets.ECR_REPOSITORY_URL}
+  ECR_IMAGE_NAME: ${secrets.ECR_IMAGE_NAME}
 jobs:
   BuildImage:
     runs-on: ubuntu-latest
@@ -19,25 +23,23 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::504200660083:role/githubOIDCRole
+          role-to-assume: ${env.AWS_EXECUTION_ROLE}
           aws-region: us-east-1
       - name: Login to Amazon ECR
         uses: docker/login-action@v2
         with:
-          registry: 504200660083.dkr.ecr.us-east-1.amazonaws.com/craft-europa
+          registry: ${env.ECR_REGISTRY_URL}/${env.ECR_IMAGE_NAME}
       - name: Build, tag, and push docker image to Amazon ECR
         uses: docker/build-push-action@v4
         env:
-          REGISTRY: 504200660083.dkr.ecr.us-east-1.amazonaws.com
-          REPOSITORY: craft-europa
           IMAGE_TAG: ${{ github.sha }}
         with:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
           tags: |
-            ${{env.REGISTRY}}/${{env.REPOSITORY}}:${{env.IMAGE_TAG}}
-            ${{env.REGISTRY}}/${{env.REPOSITORY}}:latest
+            ${{env.ECR_REGISTRY_URL}}/${{env.ECR_IMAGE_NAME}}:${{env.IMAGE_TAG}}
+            ${{env.ECR_REGISTRY_URL}}/${{env.ECR_IMAGE_NAME}}:latest
       - name: Set ECS Security Group ID Variable
         run: echo "ecs_sg_id=$(aws ec2 describe-security-groups --filters Name=group-name,Values=ecs-service-sg --query 'SecurityGroups[*].{ID:GroupId}' --output text)" >> "$GITHUB_ENV"
       - name: Set ECS Subnet IDs Variable
