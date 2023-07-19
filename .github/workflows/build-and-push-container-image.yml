@@ -12,7 +12,7 @@ permissions:
   contents: read
 env:
   AWS_EXECUTION_ROLE: ${{secrets.AWS_EXECUTION_ROLE}}
-  ECR_REGISTRY_URL: ${{secrets.ECR_REPOSITORY_URL}}
+  ECR_REGISTRY_URL: ${{secrets.ECR_REGISTRY_URL}}
   ECR_IMAGE_NAME: ${{secrets.ECR_IMAGE_NAME}}
 jobs:
   BuildImage:
