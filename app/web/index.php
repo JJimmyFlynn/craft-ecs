@@ -3,6 +3,8 @@
  * Craft web bootstrap file
  */
 
+define('CRAFT_STREAM_LOG', true);
+
 // Set path constants
 define('CRAFT_BASE_PATH', dirname(__DIR__));
 define('CRAFT_VENDOR_PATH', CRAFT_BASE_PATH.'/vendor');
